@@ -1,10 +1,12 @@
-import React, { ReactChild } from "react";
+import React, { isValidElement, ReactChild, useRef } from "react";
 
 interface Props {
   children: ReactChild;
 }
 
 const Draggable: React.FC<Props> = ({ children }) => {
+  const boxRef = useRef<HTMLDivElement>(null);
+
   const draggableStyle = {
     display: "flex",
     alignItems: "center",
@@ -15,7 +17,17 @@ const Draggable: React.FC<Props> = ({ children }) => {
     backgroundColor: "#ced4da",
   };
 
-  return <div style={draggableStyle}>{children}</div>;
+  return (
+    <div style={draggableStyle}>
+      {React.Children.map(children, (child) => {
+        if (isValidElement(child)) {
+          return React.cloneElement(child, {
+            ref: boxRef,
+          });
+        }
+      })}
+    </div>
+  );
 };
 
 export default Draggable;
