@@ -10,11 +10,44 @@ interface Props {
   children: ReactChild;
 }
 
+interface BoxPosition {
+  x: number | null;
+  y: number | null;
+}
+
 const Draggable: React.FC<Props> = ({ children }) => {
   const [isBoxDragging, setIsBoxDragging] = useState<boolean>(false);
+  const [draggableDOMRect, setDraggableDOMRect] = useState<DOMRect>();
+  const [boxDOMRect, setBoxDOMRect] = useState<DOMRect>();
+  const [boxPosition, setBoxPosition] = useState<BoxPosition>({
+    x: null,
+    y: null,
+  });
 
   const draggableRef = useRef<HTMLDivElement>(null);
   const boxRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (draggableRef.current != null) {
+      setDraggableDOMRect(draggableRef.current.getBoundingClientRect());
+    }
+  }, [draggableRef.current]);
+
+  useEffect(() => {
+    if (boxRef.current != null) {
+      setBoxDOMRect(boxRef.current.getBoundingClientRect());
+    }
+  }, [boxRef.current]);
+
+  // set initial box position.
+  useEffect(() => {
+    if (draggableDOMRect != null && boxDOMRect != null) {
+      setBoxPosition({
+        x: boxDOMRect.x - draggableDOMRect.x + boxDOMRect.width / 2,
+        y: boxDOMRect.y - draggableDOMRect.y + boxDOMRect.height / 2,
+      });
+    }
+  }, [draggableDOMRect, boxDOMRect]);
 
   const dragStart = (event: MouseEvent) => {
     if (event.target === boxRef.current) {
@@ -23,7 +56,9 @@ const Draggable: React.FC<Props> = ({ children }) => {
   };
 
   const dragEnd = (event: MouseEvent) => {
-    setIsBoxDragging(false);
+    if (isBoxDragging) {
+      setIsBoxDragging(false);
+    }
   };
 
   const drag = (event: MouseEvent) => {};
