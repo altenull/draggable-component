@@ -8,7 +8,7 @@ interface Props {
 const Draggable: React.FC<Props> = ({ children }) => {
   const [draggableRef, boxRef, isBoxDragging] = useDragging();
 
-  const draggableStyle = {
+  const draggableStyle: React.CSSProperties = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",

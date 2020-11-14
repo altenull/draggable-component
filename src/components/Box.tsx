@@ -3,7 +3,7 @@ import React from "react";
 interface Props {}
 
 const Box = React.forwardRef<HTMLDivElement, Props>((props, ref) => {
-  const boxStyle = {
+  const boxStyle: React.CSSProperties = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
