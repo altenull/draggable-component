@@ -106,6 +106,7 @@ const Draggable: React.FC<Props> = ({ children }) => {
     height: "90vh",
     margin: "auto",
     backgroundColor: "#ced4da",
+    overflow: "hidden",
   };
 
   return (
