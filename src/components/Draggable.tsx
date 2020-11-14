@@ -5,63 +5,75 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { DraggableAsset } from "../models/draggable-asset";
 
 interface Props {
   children: ReactChild;
 }
 
-interface BoxPosition {
-  x: number | null;
-  y: number | null;
-}
-
 const Draggable: React.FC<Props> = ({ children }) => {
-  const [isBoxDragging, setIsBoxDragging] = useState<boolean>(false);
-  const [draggableDOMRect, setDraggableDOMRect] = useState<DOMRect>();
-  const [boxDOMRect, setBoxDOMRect] = useState<DOMRect>();
-  const [boxPosition, setBoxPosition] = useState<BoxPosition>({
-    x: null,
-    y: null,
+  const [draggableAsset, setDraggableAssetll] = useState<DraggableAsset>({
+    initialX: 0,
+    initialY: 0,
+    currentX: 0,
+    currentY: 0,
+    offsetX: 0,
+    offsetY: 0,
+    isBoxDragging: false,
   });
 
   const draggableRef = useRef<HTMLDivElement>(null);
   const boxRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (draggableRef.current != null) {
-      setDraggableDOMRect(draggableRef.current.getBoundingClientRect());
+  const dragStart = (event: MouseEvent) => {
+    if (event.target === boxRef.current) {
+      setDraggableAssetll((_draggableAsset: DraggableAsset) => {
+        return {
+          ..._draggableAsset,
+          initialX: event.clientX,
+          initialY: event.clientY,
+          isBoxDragging: true,
+        };
+      });
     }
-  }, [draggableRef.current]);
+  };
+
+  const dragEnd = () => {
+    if (draggableAsset.isBoxDragging) {
+      setDraggableAssetll((_draggableAsset: DraggableAsset) => {
+        return {
+          ..._draggableAsset,
+          initialX: 0,
+          initialY: 0,
+          offsetX: _draggableAsset.currentX,
+          offsetY: _draggableAsset.currentY,
+          isBoxDragging: false,
+        };
+      });
+    }
+  };
+
+  const drag = (event: MouseEvent) => {
+    if (draggableAsset.isBoxDragging) {
+      event.preventDefault();
+
+      setDraggableAssetll((_draggableAsset: DraggableAsset) => {
+        return {
+          ..._draggableAsset,
+          currentX:
+            event.clientX - _draggableAsset.initialX + _draggableAsset.offsetX,
+          currentY:
+            event.clientY - _draggableAsset.initialY + _draggableAsset.offsetY,
+        };
+      });
+    }
+  };
 
   useEffect(() => {
     if (boxRef.current != null) {
-      setBoxDOMRect(boxRef.current.getBoundingClientRect());
+      boxRef.current.style.transform = `translate(${draggableAsset.currentX}px, ${draggableAsset.currentY}px)`;
     }
-  }, [boxRef.current]);
-
-  // set initial box position.
-  useEffect(() => {
-    if (draggableDOMRect != null && boxDOMRect != null) {
-      setBoxPosition({
-        x: boxDOMRect.x - draggableDOMRect.x + boxDOMRect.width / 2,
-        y: boxDOMRect.y - draggableDOMRect.y + boxDOMRect.height / 2,
-      });
-    }
-  }, [draggableDOMRect, boxDOMRect]);
-
-  const dragStart = (event: MouseEvent) => {
-    if (event.target === boxRef.current) {
-      setIsBoxDragging(true);
-    }
-  };
-
-  const dragEnd = (event: MouseEvent) => {
-    if (isBoxDragging) {
-      setIsBoxDragging(false);
-    }
-  };
-
-  const drag = (event: MouseEvent) => {};
+  }, [draggableAsset.currentX, draggableAsset.currentY]);
 
   useEffect(() => {
     draggableRef?.current?.addEventListener("mousedown", dragStart);
@@ -72,7 +84,7 @@ const Draggable: React.FC<Props> = ({ children }) => {
   }, [draggableRef.current]);
 
   useEffect(() => {
-    if (isBoxDragging) {
+    if (draggableAsset.isBoxDragging) {
       draggableRef?.current?.addEventListener("mouseup", dragEnd);
       draggableRef?.current?.addEventListener("mousemove", drag);
     } else {
@@ -84,7 +96,7 @@ const Draggable: React.FC<Props> = ({ children }) => {
       draggableRef?.current?.removeEventListener("mouseup", dragEnd);
       draggableRef?.current?.removeEventListener("mousemove", drag);
     };
-  }, [draggableRef.current, isBoxDragging]);
+  }, [draggableRef.current, draggableAsset.isBoxDragging]);
 
   const draggableStyle = {
     display: "flex",
