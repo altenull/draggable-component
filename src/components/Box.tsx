@@ -10,12 +10,15 @@ const Box = React.forwardRef<HTMLDivElement, Props>((props, ref) => {
     width: "160px",
     height: "160px",
     backgroundColor: "#08a9e3",
+    color: "#ffffff",
     cursor: "move",
+    fontSize: "20px",
+    fontWeight: 500,
   };
 
   return (
     <div ref={ref} style={boxStyle}>
-      Box
+      I'm Box
     </div>
   );
 });
