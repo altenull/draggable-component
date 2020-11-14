@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { DraggableAsset } from "../models/draggable-asset";
 
 export const useDragging = (): [React.RefObject<HTMLDivElement>, React.RefObject<HTMLDivElement>, boolean] => {
@@ -15,7 +15,7 @@ export const useDragging = (): [React.RefObject<HTMLDivElement>, React.RefObject
   const draggableRef = useRef<HTMLDivElement>(null);
   const boxRef = useRef<HTMLDivElement>(null);
 
-  const dragStart = (event: MouseEvent) => {
+  const dragStart = useCallback((event: MouseEvent) => {
     if (event.target === boxRef.current) {
       setDraggableAssetll((_draggableAsset: DraggableAsset) => {
         return {
@@ -26,9 +26,9 @@ export const useDragging = (): [React.RefObject<HTMLDivElement>, React.RefObject
         };
       });
     }
-  };
+  }, []);
 
-  const dragEnd = () => {
+  const dragEnd = useCallback(() => {
     if (draggableAsset.isBoxDragging) {
       setDraggableAssetll((_draggableAsset: DraggableAsset) => {
         return {
@@ -41,9 +41,9 @@ export const useDragging = (): [React.RefObject<HTMLDivElement>, React.RefObject
         };
       });
     }
-  };
+  }, [draggableAsset.isBoxDragging]);
 
-  const drag = (event: MouseEvent) => {
+  const drag = useCallback((event: MouseEvent) => {
     if (draggableAsset.isBoxDragging) {
       event.preventDefault();
 
@@ -57,7 +57,7 @@ export const useDragging = (): [React.RefObject<HTMLDivElement>, React.RefObject
         };
       });
     }
-  };
+  }, [draggableAsset.isBoxDragging]);
 
   useEffect(() => {
     if (boxRef.current != null) {
@@ -66,27 +66,31 @@ export const useDragging = (): [React.RefObject<HTMLDivElement>, React.RefObject
   }, [draggableAsset.currentX, draggableAsset.currentY]);
 
   useEffect(() => {
-    draggableRef?.current?.addEventListener("mousedown", dragStart);
+    const draggableElement: HTMLDivElement | null = draggableRef.current;
+
+    draggableElement?.addEventListener("mousedown", dragStart);
 
     return () => {
-      draggableRef?.current?.removeEventListener("mousedown", dragStart);
+      draggableElement?.removeEventListener("mousedown", dragStart);
     };
-  }, [draggableRef.current]);
+  }, [draggableRef, dragStart]);
 
   useEffect(() => {
+    const draggableElement: HTMLDivElement | null = draggableRef.current;
+
     if (draggableAsset.isBoxDragging) {
-      draggableRef?.current?.addEventListener("mouseup", dragEnd);
-      draggableRef?.current?.addEventListener("mousemove", drag);
+      draggableElement?.addEventListener("mouseup", dragEnd);
+      draggableElement?.addEventListener("mousemove", drag);
     } else {
-      draggableRef?.current?.removeEventListener("mouseup", dragEnd);
-      draggableRef?.current?.removeEventListener("mousemove", drag);
+      draggableElement?.removeEventListener("mouseup", dragEnd);
+      draggableElement?.removeEventListener("mousemove", drag);
     }
 
     return () => {
-      draggableRef?.current?.removeEventListener("mouseup", dragEnd);
-      draggableRef?.current?.removeEventListener("mousemove", drag);
+      draggableElement?.removeEventListener("mouseup", dragEnd);
+      draggableElement?.removeEventListener("mousemove", drag);
     };
-  }, [draggableRef.current, draggableAsset.isBoxDragging]);
+  }, [draggableRef, draggableAsset.isBoxDragging, drag, dragEnd]);
 
   return [draggableRef, boxRef, draggableAsset.isBoxDragging]
 }
